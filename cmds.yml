@@ -1,0 +1,68 @@
+# Optional "meta" object
+meta:
+  # All fields are optional
+  # Directory must exist because the program will change to this directory before executing the shell commands.
+  working_dir: '/tmp/current'
+  out_file: 'default-out-file.log' # Write stdout to stdout and this file
+  err_file: 'default-err-file.log' # Write stderr to stderr and this file
+
+# A "series" object: commands are executed in series
+series: [
+  # # A "command" object for a single command
+  # {
+  #   # Can have optional "meta" object
+  #   meta: { working_dir: '/tmp/trash', out_file: 'pwd-out-file.log', err_file: 'pwd-err-file.log' },
+  #   cmd: 'pwd'
+  # },
+
+  # {
+  #   # Can have optional "meta" object
+  #   meta: { working_dir: '/var', out_file: 'go-out-file.log', err_file: 'go-err-file.log' },
+  #   cmd: 'pwd'
+  # },
+
+  # An list of commands to be executed in parallel.
+  # Probably better to have all commands in a parallel group have the same "meta" object.
+  # It seems a race condition is possible. This manifested in a change of directories
+  # in a string type using the working directory value of a "command" type. I don't know why.
+  # They were executed in their own separate go routines.
+  [
+    # A shell command string: the working directory and out and err files are inherited from "meta"
+    'whoami',
+
+    # A "command" object for a single command: no "meta" object, the working directory is the
+    # directory where this program was run. There are no out and err files for this command therefore
+    # the stdout and stderr of this command aren't written to any files.
+    { cmd: 'sleep 2' },
+
+    # A "command" object for a single command
+    {
+      # Can have optional "meta" object
+      # meta: { working_dir: '/dev' },
+      cmd: 'sleep 3'
+    },
+
+    { cmd: 'sleep 1' },
+
+    # {
+    #   meta: { working_dir: '/tmp/trash', out_file: 'date-out-file.log', err_file: 'date-err-file.log' },
+    #   cmd: 'date'
+    # },
+
+    # {
+    #   meta: { working_dir: '/tmp/trash', out_file: 'ls-out-file.log', err_file: 'ls-err-file.log' },
+    #   cmd: 'ls'
+    # }
+  ],
+
+  # # A shell command string
+  # 'ls',
+
+  # 'pwd'
+]
+
+parallel: [
+  'sleep 4',
+  { cmd: 'whoami' },
+  { cmd: 'sleep 5' },
+]
